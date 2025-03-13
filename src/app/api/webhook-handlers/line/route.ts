@@ -1,42 +1,34 @@
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
-
 import {
+  validateSignature,
+  WebhookRequestBody,
   MessageEvent,
-  handleMessage,
-} from "@/app/api/webhook-handlers/line/event-handlers/message";
-import {
   FollowEvent,
-  handleFollow,
-} from "@/app/api/webhook-handlers/line/event-handlers/follow";
+} from "@line/bot-sdk";
 
-const channelSecret = process.env.LINE_CHANNEL_SECRET;
+import { handleMessage } from "@/app/api/webhook-handlers/line/event-handlers/message";
+import { handleFollow } from "@/app/api/webhook-handlers/line/event-handlers/follow";
+
+const config = {
+  channelSecret: process.env.CHANNEL_SECRET || "",
+};
 
 export async function POST(request: NextRequest) {
-  if (!channelSecret) {
-    console.error("LINE_CHANNEL_SECRET is not set.");
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
-  }
   try {
-    const signature = request.headers.get("x-line-signature");
-    if (!signature) {
-      return NextResponse.json({ error: "Missing signature" }, { status: 400 });
-    }
-
     const text = await request.text();
-    const hash = crypto
-      .createHmac("sha256", channelSecret)
-      .update(text)
-      .digest("base64");
 
-    if (hash !== signature) {
+    //validate webhook signature
+    if (
+      validateSignature(
+        text,
+        config.channelSecret,
+        request.headers.get("x-line-signature") || ""
+      )
+    ) {
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 
-    const body = JSON.parse(text);
+    const body = JSON.parse(text) as WebhookRequestBody;
     console.log("Received webhook:", body);
 
     if (body.events && body.events.length > 0) {

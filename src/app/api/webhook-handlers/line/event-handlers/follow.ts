@@ -1,13 +1,12 @@
-export type FollowEvent = {
-  type: "follow";
-  replyToken: string;
-  source: {
-    userId: string;
-    type: string;
-  };
-  timestamp: number;
-};
+import { messagingApi, FollowEvent } from "@line/bot-sdk";
 export async function handleFollow(event: FollowEvent) {
+  const client = new messagingApi.MessagingApiClient({
+    channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN || "",
+  });
   const userId = event.source.userId;
   console.log(`User followed: ${userId}`);
+  client.pushMessage({
+    to: userId || "",
+    messages: [{ type: "text", text: `your user id is ${userId}` }],
+  });
 }

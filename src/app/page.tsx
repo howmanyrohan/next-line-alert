@@ -1,8 +1,35 @@
-import Image from "next/image";
-import { sendPush } from "./api/webhook-handlers/line/message-handlers/push";
+"use client";
 
-export default async function Home() {
-  await sendPush("bot server active");
+import { messagingApi } from "@line/bot-sdk";
+import Image from "next/image";
+export default function Home() {
+  const pmr: messagingApi.PushMessageRequest = {
+    to: "C218c440819754deed51e33f28883b0b5",
+    messages: [{ type: "text", text: "Hello" }],
+  };
+  const handleClick = async () => {
+    try {
+      const response = await fetch(
+        "/api/webhook-handlers/line/message-handlers/push",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(pmr),
+        }
+      );
+
+      if (response.ok) {
+        console.log("Message pushed successfully!");
+      } else {
+        console.error("Failed to push message", await response.json());
+      }
+    } catch (error) {
+      console.error("Error pushing message:", error);
+    }
+  };
+
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
@@ -19,7 +46,10 @@ export default async function Home() {
         </ul>
 
         <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <button className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5">
+          <button
+            onClick={handleClick}
+            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
+          >
             Say Hello
           </button>
         </div>
