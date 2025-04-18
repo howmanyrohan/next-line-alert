@@ -9,16 +9,13 @@ export default function Home() {
   };
   const handleClick = async () => {
     try {
-      const response = await fetch(
-        "/api/webhook-handlers/line/message-handlers/push",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(pmr),
-        }
-      );
+      const response = await fetch("/api/line/message/push", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(pmr),
+      });
 
       if (response.ok) {
         console.log("Message pushed successfully!");

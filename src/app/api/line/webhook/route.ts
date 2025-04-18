@@ -6,8 +6,8 @@ import {
   FollowEvent,
 } from "@line/bot-sdk";
 
-import { handleMessage } from "@/app/api/webhook-handlers/line/event-handlers/message";
-import { handleFollow } from "@/app/api/webhook-handlers/line/event-handlers/follow";
+import { handleMessage } from "@/app/api/line/webhook/message";
+import { handleFollow } from "@/app/api/line/webhook/follow";
 
 const config = {
   channelSecret: process.env.CHANNEL_SECRET || "",
