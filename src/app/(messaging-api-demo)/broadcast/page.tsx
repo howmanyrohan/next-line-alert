@@ -4,7 +4,7 @@ import type React from "react";
 
 import { useState } from "react";
 import { PinIcon as BroadcastPin } from "lucide-react";
-import { messagingApi } from "@line/bot-sdk";
+import type { BroadcastRequest } from "@/types/line";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -35,7 +35,7 @@ export default function BroadcastPage() {
     setLoading(true);
 
     try {
-      const broadcastRequest: messagingApi.BroadcastRequest = {
+      const broadcastRequest: BroadcastRequest = {
         messages: [{ type: "text", text: message }],
       };
       await fetch("/api/line/message/broadcast", {

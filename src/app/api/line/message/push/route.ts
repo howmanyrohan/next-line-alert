@@ -1,5 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { messagingApi } from "@line/bot-sdk";
+
+// Mark this file as server-only
+export const runtime = "nodejs";
 
 const client = new messagingApi.MessagingApiClient({
   channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN || "",

@@ -4,7 +4,7 @@ import type React from "react";
 
 import { useState } from "react";
 import { Send } from "lucide-react";
-import { messagingApi } from "@line/bot-sdk";
+import type { PushMessageRequest } from "@/types/line";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -36,7 +36,7 @@ export default function PushPage() {
     setLoading(true);
 
     try {
-      const pmr: messagingApi.PushMessageRequest = {
+      const pmr: PushMessageRequest = {
         to: userId,
         messages: [{ type: "text", text: message }],
       };

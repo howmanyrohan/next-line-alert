@@ -1,13 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import {
   validateSignature,
-  WebhookRequestBody,
-  MessageEvent,
-  FollowEvent,
+  type WebhookRequestBody,
+  type MessageEvent,
+  type FollowEvent,
 } from "@line/bot-sdk";
 
 import { handleMessage } from "@/app/api/line/webhook/message";
 import { handleFollow } from "@/app/api/line/webhook/follow";
+
+// Mark this file as server-only
+export const runtime = "nodejs"; // This ensures it runs in a Node.js environment
 
 const config = {
   channelSecret: process.env.CHANNEL_SECRET || "",
@@ -17,9 +20,9 @@ export async function POST(request: NextRequest) {
   try {
     const text = await request.text();
 
-    //validate webhook signature
+    // Validate webhook signature
     if (
-      validateSignature(
+      !validateSignature(
         text,
         config.channelSecret,
         request.headers.get("x-line-signature") || ""

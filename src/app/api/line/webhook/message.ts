@@ -1,34 +1,22 @@
-import { messagingApi, MessageEvent, TextEventMessage } from "@line/bot-sdk";
-
-export type ReplyRule = {
-  id: string;
-  keyword: string;
-  response: string;
-};
-
-export let replyRules: ReplyRule[] = [
-  {
-    id: "1",
-    keyword: "hello",
-    response: "hi",
-  },
-];
-
-export const setReplyRules = (newReplyRules: ReplyRule[]) => {
-  replyRules = newReplyRules;
-};
+import {
+  messagingApi,
+  type MessageEvent,
+  type TextEventMessage,
+} from "@line/bot-sdk";
+import { findMatchingRule } from "@/lib/reply-rules";
 
 export const handleMessage = async (event: MessageEvent) => {
   const client = new messagingApi.MessagingApiClient({
     channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN || "",
   });
+
   console.log(event);
+
   switch (event.message.type) {
     case "text":
       const textEventMessage: TextEventMessage = event.message;
-      const replyRule: ReplyRule | undefined = replyRules.find((rule) =>
-        textEventMessage.text.toLowerCase().includes(rule.keyword.toLowerCase())
-      );
+      const replyRule = findMatchingRule(textEventMessage.text);
+
       client.replyMessage({
         replyToken: event.replyToken,
         messages: [

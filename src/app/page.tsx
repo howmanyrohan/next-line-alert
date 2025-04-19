@@ -1,9 +1,9 @@
 "use client";
 
-import { messagingApi } from "@line/bot-sdk";
+import type { PushMessageRequest } from "@/types/line";
 import Image from "next/image";
 export default function Home() {
-  const pmr: messagingApi.PushMessageRequest = {
+  const pmr: PushMessageRequest = {
     to: "C218c440819754deed51e33f28883b0b5",
     messages: [{ type: "text", text: "Hello" }],
   };

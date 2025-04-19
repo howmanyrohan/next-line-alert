@@ -1,8 +1,7 @@
 "use client";
 
 import type React from "react";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MessageSquare, Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -18,18 +17,38 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
-import {} from "@line/bot-sdk";
 import {
-  ReplyRule,
-  replyRules,
-  setReplyRules,
-} from "@/app/api/line/webhook/message";
+  fetchReplyRules,
+  createReplyRule,
+  removeReplyRule,
+} from "@/app/actions/reply-rules";
+import type { ReplyRule } from "@/lib/reply-rules";
 
 export default function ReplyPage() {
   const [keyword, setKeyword] = useState("");
   const [response, setResponse] = useState("");
+  const [rules, setRules] = useState<ReplyRule[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleAddRule = (e: React.FormEvent) => {
+  useEffect(() => {
+    const loadRules = async () => {
+      try {
+        const fetchedRules = await fetchReplyRules();
+        setRules(fetchedRules);
+      } catch (error) {
+        console.error(error);
+        toast("Error", {
+          description: "Failed to load reply rules",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadRules();
+  }, []);
+
+  const handleAddRule = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!keyword.trim() || !response.trim()) {
@@ -45,22 +64,38 @@ export default function ReplyPage() {
       response: response.trim(),
     };
 
-    setReplyRules([...replyRules, newRule]);
+    try {
+      await createReplyRule(newRule);
+      setRules([...rules, newRule]);
 
-    toast("Success", {
-      description: "Reply rule added successfully",
-    });
+      toast("Success", {
+        description: "Reply rule added successfully",
+      });
 
-    setKeyword("");
-    setResponse("");
+      setKeyword("");
+      setResponse("");
+    } catch (error) {
+      console.error(error);
+      toast("Error", {
+        description: "Failed to add reply rule",
+      });
+    }
   };
 
-  const handleDeleteRule = (id: string) => {
-    setReplyRules(replyRules.filter((rule) => rule.id !== id));
+  const handleDeleteRule = async (id: string) => {
+    try {
+      await removeReplyRule(id);
+      setRules(rules.filter((rule) => rule.id !== id));
 
-    toast("Success", {
-      description: "Reply rule deleted successfully",
-    });
+      toast("Success", {
+        description: "Reply rule deleted successfully",
+      });
+    } catch (error) {
+      console.error(error);
+      toast("Error", {
+        description: "Failed to delete reply rule",
+      });
+    }
   };
 
   return (
@@ -117,7 +152,11 @@ export default function ReplyPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {replyRules.length === 0 ? (
+          {loading ? (
+            <div className="flex justify-center py-8">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+            </div>
+          ) : rules.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <div className="rounded-full bg-muted p-4 mb-4">
                 <MessageSquare className="h-8 w-8 text-muted-foreground" />
@@ -129,7 +168,7 @@ export default function ReplyPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {replyRules.map((rule, index) => (
+              {rules.map((rule, index) => (
                 <div key={rule.id}>
                   {index > 0 && <Separator className="my-4" />}
                   <div className="flex justify-between items-start gap-4">
